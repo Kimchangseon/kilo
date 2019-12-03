@@ -1143,9 +1143,10 @@ void editorProcessKeypress(int fd) {
             editorSetStatusMessage("WARNING!!! File has unsaved changes. "
                 "Press Ctrl-Q %d more times to quit.", quit_times);
             quit_times--;
-            return;
+	    return;
         }
-        exit(0);
+	system("clear");
+	exit(0);
         break;
     case CTRL_S:    
        editorSave();
