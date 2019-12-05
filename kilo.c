@@ -1182,6 +1182,7 @@ void editorProcessKeypress(int fd) {
     case CTRL_L:
         break;
     case ESC:
+	editorSetStatusMessage("HELP: Ctrl-S = save | ctrl-Q = quit | Ctrl-F = find | Ctrl-C = Indent");
         break;
     default:
         editorInsertChar(c);
