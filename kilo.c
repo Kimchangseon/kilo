@@ -74,15 +74,15 @@ struct editorSyntax {
     int flags;
 };
 
-/*이 구조는 편집중인 파일의 한 줄을 나타냅니다. */
+
 typedef struct erow {
-	int idx; /*파일의 행 인덱스(0부터 시작) */
-	int size; /*널 용어를 제외한 행의 크기. */
-	int rsize; /*렌더링 된 행의 크기. */
-	char* chars; /*행 내용. */
-	char* render; /*화면에 대한 "렌더링 된"행 내용(TAB의 경우). */
-	unsigned char* hl; /*렌더의 각 문자에 대한 구문 강조 유형. */
-	int hl_oc; /*행은 마지막 구문 강조 검사에서 끝에 주석이있었습니다. */
+	int idx;
+	int size;
+	int rsize;
+	char* chars;
+	char* render;
+	unsigned char* hl;
+	int hl_oc;
 
 } erow;
 
@@ -92,19 +92,19 @@ typedef struct hlcolor {
 } hlcolor;
 
 struct editorConfig {
-	int cx, cy; /*문자에서 커서 x와 y 위치 */
-	int rowoff; /*행의 오프셋이 표시됩니다. */
-	int coloff; /*열 오프셋이 표시됩니다. */
-	int screenrows; /*보여줄 수있는 행 수 */
-	int screencols; /*보여줄 수있는 열의 수 */
-	int numrows; /*행 수 */
-	int rawmode; /*터미널 원시 모드가 활성화되어 있습니까 ? */
-	erow* row; /*행 */
-	int dirty; /*파일이 수정되었지만 저장되지 않았습니다. */
-	char* filename; /*현재 열린 파일 이름 */
+	int cx, cy;
+	int rowoff;
+	int coloff;
+	int screenrows;
+	int screencols;
+	int numrows;
+	int rawmode;
+	erow* row;
+	int dirty;
+	char* filename;
 	char statusmsg[80];
 	time_t statusmsg_time;
-	struct editorSyntax* syntax; /*현재 구문 강조 표시 또는 NULL */
+	struct editorSyntax* syntax;
 };
 
 static struct editorConfig E;
@@ -113,7 +113,7 @@ enum KEY_ACTION{
         KEY_NULL = 0,
         CTRL_C = 3,  
         CTRL_D = 4,  
-        CTRL_F = 6,
+        CTRL_F = 6,	
         CTRL_H = 8,  
         TAB = 9,     
         CTRL_L = 12, 
