@@ -881,7 +881,7 @@ void editorFind(int fd) {
 		
 		else if (isprint(c)) {
 			if (strstr(query, change)) {
-				for (int i = 0; i < sizeof(query); i++) {
+				for (int i = 0; i < (signed)sizeof(query); i++) {
 					if (qlen != 0) query[--qlen] = '\0';
 					last_match = -1;
 				}
@@ -1189,6 +1189,8 @@ void editorProcessKeypress(int fd) {
         editorFind(fd);
         break;
     case BACKSPACE:    
+	editorDelChar();
+	break;
     case CTRL_H:       
     case CTRL_J:
 	startOfLine();
