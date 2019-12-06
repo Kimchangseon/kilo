@@ -120,7 +120,9 @@ enum KEY_ACTION{
         ENTER = 13,  
         CTRL_Q = 17, 
         CTRL_S = 19, 
-        CTRL_U = 21, 
+        CTRL_U = 21,
+	CTRL_J = 10,
+	CTRL_K = 11,
         ESC = 27,    
         BACKSPACE =  127, 
         ARROW_LEFT = 1000,
@@ -1169,7 +1171,6 @@ void editorProcessKeypress(int fd) {
         editorInsertNewline();
         break;
     case CTRL_C:
-	endOfLine();	
         break;
     case CTRL_Q: 
         if (E.dirty && quit_times) {
@@ -1189,6 +1190,12 @@ void editorProcessKeypress(int fd) {
         break;
     case BACKSPACE:    
     case CTRL_H:       
+    case CTRL_J:
+	startOfLine();
+	break;
+    case CTRL_K:
+	endOfLine();
+	break;
     case DEL_KEY:
         editorDelChar();
         break;
