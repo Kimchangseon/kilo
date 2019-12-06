@@ -74,36 +74,37 @@ struct editorSyntax {
     int flags;
 };
 
-
+/*이 구조는 편집중인 파일의 한 줄을 나타냅니다. */
 typedef struct erow {
-    int idx;           
-    int size;          
-    int rsize;         
-    char *chars;       
-    char *render;      
-    unsigned char *hl; 
-    int hl_oc;         
-                       
+	int idx; /*파일의 행 인덱스(0부터 시작) */
+	int size; /*널 용어를 제외한 행의 크기. */
+	int rsize; /*렌더링 된 행의 크기. */
+	char* chars; /*행 내용. */
+	char* render; /*화면에 대한 "렌더링 된"행 내용(TAB의 경우). */
+	unsigned char* hl; /*렌더의 각 문자에 대한 구문 강조 유형. */
+	int hl_oc; /*행은 마지막 구문 강조 검사에서 끝에 주석이있었습니다. */
+
 } erow;
+
 
 typedef struct hlcolor {
     int r,g,b;
 } hlcolor;
 
 struct editorConfig {
-    int cx,cy;  
-    int rowoff; 
-    int coloff; 
-    int screenrows;
-    int screencols;
-    int numrows;   
-    int rawmode;   
-    erow *row;     
-    int dirty;     
-    char *filename;
-    char statusmsg[80];
-    time_t statusmsg_time;
-    struct editorSyntax *syntax;
+	int cx, cy; /*문자에서 커서 x와 y 위치 */
+	int rowoff; /*행의 오프셋이 표시됩니다. */
+	int coloff; /*열 오프셋이 표시됩니다. */
+	int screenrows; /*보여줄 수있는 행 수 */
+	int screencols; /*보여줄 수있는 열의 수 */
+	int numrows; /*행 수 */
+	int rawmode; /*터미널 원시 모드가 활성화되어 있습니까 ? */
+	erow* row; /*행 */
+	int dirty; /*파일이 수정되었지만 저장되지 않았습니다. */
+	char* filename; /*현재 열린 파일 이름 */
+	char statusmsg[80];
+	time_t statusmsg_time;
+	struct editorSyntax* syntax; /*현재 구문 강조 표시 또는 NULL */
 };
 
 static struct editorConfig E;
@@ -112,7 +113,7 @@ enum KEY_ACTION{
         KEY_NULL = 0,
         CTRL_C = 3,  
         CTRL_D = 4,  
-        CTRL_F = 6,  
+        CTRL_F = 6,
         CTRL_H = 8,  
         TAB = 9,     
         CTRL_L = 12, 
@@ -285,6 +286,7 @@ failed:
 int is_separator(int c) {
     return c == '\0' || isspace(c) || strchr(",.()+-/*=~%[];",c) != NULL;
 }
+
 int editorRowHasOpenComment(erow *row) {
     if (row->hl && row->rsize && row->hl[row->rsize-1] == HL_MLCOMMENT &&
         (row->rsize < 2 || (row->render[row->rsize-2] != '*' ||
@@ -489,7 +491,6 @@ void editorFreeRow(erow *row) {
     free(row->hl);
 }
 
-
 void editorDelRow(int at) {
     erow *row;
 
@@ -638,6 +639,7 @@ void editorDelChar() {
     if (row) editorUpdateRow(row);
     E.dirty++;
 }
+
 int editorOpen(char *filename) {
     FILE *fp;
 
@@ -831,12 +833,13 @@ void editorSetStatusMessage(const char *fmt, ...) {
 #define KILO_QUERY_LEN 256
 
 void editorFind(int fd) {
-    char query[KILO_QUERY_LEN+1] = {0};
-    int qlen = 0;
-    int last_match = -1;
-    int find_next = 0; 
-    int saved_hl_line = -1;
-    char *saved_hl = NULL;
+	char query[KILO_QUERY_LEN + 1] = { 0 };
+	int qlen = 0;
+	int last_match = -1;
+	int find_next = 0;
+	int saved_hl_line = -1;
+	char* saved_hl = NULL;
+	char* change = "~>";
 
 #define FIND_RESTORE_HL do { \
     if (saved_hl) { \
@@ -844,79 +847,92 @@ void editorFind(int fd) {
         saved_hl = NULL; \
     } \
 } while (0)
-    int saved_cx = E.cx, saved_cy = E.cy;
-    int saved_coloff = E.coloff, saved_rowoff = E.rowoff;
+	int saved_cx = E.cx, saved_cy = E.cy;
+	int saved_coloff = E.coloff, saved_rowoff = E.rowoff;
 
-    while(1) {
-        editorSetStatusMessage(
-            "Search: %s (Use ESC/Arrows/Enter)", query);
-        editorRefreshScreen();
+	while (1) {
+		editorSetStatusMessage(
+			"Search: %s (Use ESC/Arrows/Enter) ,'~>' : reset word", query);
+		editorRefreshScreen();
 
-        int c = editorReadKey(fd);
-        if (c == DEL_KEY || c == CTRL_H || c == BACKSPACE) {
-            if (qlen != 0) query[--qlen] = '\0';
-            last_match = -1;
-        } else if (c == ESC || c == ENTER) {
-            if (c == ESC) {
-                E.cx = saved_cx; E.cy = saved_cy;
-                E.coloff = saved_coloff; E.rowoff = saved_rowoff;
-            }
-            FIND_RESTORE_HL;
-            editorSetStatusMessage("");
-            return;
-        } else if (c == ARROW_RIGHT || c == ARROW_DOWN) {
-            find_next = 1;
-        } else if (c == ARROW_LEFT || c == ARROW_UP) {
-            find_next = -1;
-        } else if (isprint(c)) {
-            if (qlen < KILO_QUERY_LEN) {
-                query[qlen++] = c;
-                query[qlen] = '\0';
-                last_match = -1;
-            }
-        }
+		int c = editorReadKey(fd);
+		if (c == DEL_KEY || c == CTRL_H || c == BACKSPACE) {
+			if (qlen != 0) query[--qlen] = '\0';
+			last_match = -1;
+		}
+		else if (c == ESC || c == ENTER) {
+			if (c == ESC) {
+				E.cx = saved_cx; E.cy = saved_cy;
+				E.coloff = saved_coloff; E.rowoff = saved_rowoff;
+			}
+			FIND_RESTORE_HL;
+			editorSetStatusMessage("HELP: Ctrl - S = save | ctrl - Q = quit | Ctrl - F = find | Ctrl - C = Indent");
+			return;
+		}
+		else if (c == ARROW_RIGHT || c == ARROW_DOWN) {
+			find_next = 1;
+		}
+		else if (c == ARROW_LEFT || c == ARROW_UP) {
+			find_next = -1;
+		}
 
-        if (last_match == -1) find_next = 1;
-        if (find_next) {
-            char *match = NULL;
-            int match_offset = 0;
-            int i, current = last_match;
+		
+		else if (isprint(c)) {
+			if (strstr(query, change)) {
+				for (int i = 0; i < sizeof(query); i++) {
+					if (qlen != 0) query[--qlen] = '\0';
+					last_match = -1;
+				}
+			}
+			else if (qlen < KILO_QUERY_LEN) {
+				query[qlen++] = c;
+				query[qlen] = '\0';
+				last_match = -1;
+			}
+		}
 
-            for (i = 0; i < E.numrows; i++) {
-                current += find_next;
-                if (current == -1) current = E.numrows-1;
-                else if (current == E.numrows) current = 0;
-                match = strstr(E.row[current].render,query);
-                if (match) {
-                    match_offset = match-E.row[current].render;
-                    break;
-                }
-            }
-            find_next = 0;
-            FIND_RESTORE_HL;
+		if (last_match == -1) find_next = 1;
+		if (find_next) {
+			char* match = NULL;
+			int match_offset = 0;
+			int i, current = last_match;
 
-            if (match) {
-                erow *row = &E.row[current];
-                last_match = current;
-                if (row->hl) {
-                    saved_hl_line = current;
-                    saved_hl = malloc(row->rsize);
-                    memcpy(saved_hl,row->hl,row->rsize);
-                    memset(row->hl+match_offset,HL_MATCH,qlen);
-                }
-                E.cy = 0;
-                E.cx = match_offset;
-                E.rowoff = current;
-                E.coloff = 0;
-                if (E.cx > E.screencols) {
-                    int diff = E.cx - E.screencols;
-                    E.cx -= diff;
-                    E.coloff += diff;
-                }
-            }
-        }
-    }
+			for (i = 0; i < E.numrows; i++) {
+				current += find_next;
+				if (current == -1) current = E.numrows - 1;
+				else if (current == E.numrows) current = 0;
+				match = strstr(E.row[current].render, query);
+				if (match) {
+					match_offset = match - E.row[current].render;
+					break;
+				}
+			}
+			find_next = 0;
+			FIND_RESTORE_HL;
+
+			if (match) {
+				erow* row = &E.row[current];
+				last_match = current;
+				if (row->hl) {
+					saved_hl_line = current;
+					saved_hl = malloc(row->rsize);
+					memcpy(saved_hl, row->hl, row->rsize);
+					memset(row->hl + match_offset, HL_MATCH, qlen);
+				}
+				E.cy = 0;
+				E.cx = match_offset;
+				E.rowoff = current;
+				E.coloff = 0;
+				if (E.cx > E.screencols) {
+					int diff = E.cx - E.screencols;
+					E.cx -= diff;
+					E.coloff += diff;
+				}
+			}
+		}
+	}
 }
+
 
 void editorIndent(void) {
 	int ch, tab_counter=0, i,j, line_changed=0, flag=0,counter=0;
