@@ -1067,6 +1067,20 @@ void editorIndent(void) {
 				ch = getchar();	
 	}
 }
+ void startOfLine() {
+    int filerow = E.rowoff + E.cy;
+     erow *row = (filerow >= E.numrows) ? NULL : &E.row[filerow];
+     if (row)
+         E.cx = 0;
+ }
+
+ void endOfLine() {
+	int filerow = E.rowoff + E.cy;
+	erow *row = (filerow >= E.numrows) ? NULL : &E.row[filerow];
+	if(row)
+	 E.cx = row ->size;
+}
+
 
 void editorMoveCursor(int key) {
     int filerow = E.rowoff+E.cy;
@@ -1075,6 +1089,9 @@ void editorMoveCursor(int key) {
     erow *row = (filerow >= E.numrows) ? NULL : &E.row[filerow];
 
     switch(key) {
+    case CTRL_C : 
+	E.cx=E.screencols -1;
+	break;
     case ARROW_LEFT:
         if (E.cx == 0) {
             if (E.coloff) {
@@ -1152,7 +1169,7 @@ void editorProcessKeypress(int fd) {
         editorInsertNewline();
         break;
     case CTRL_C:
-	editorIndent(); 
+	endOfLine();	
         break;
     case CTRL_Q: 
         if (E.dirty && quit_times) {
@@ -1176,6 +1193,7 @@ void editorProcessKeypress(int fd) {
         editorDelChar();
         break;
     case PAGE_UP:
+    
     case PAGE_DOWN:
         if (c == PAGE_UP && E.cy != 0)
             E.cy = 0;
