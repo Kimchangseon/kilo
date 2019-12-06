@@ -24,6 +24,10 @@ style CLI.
 
 Kilo was written by Salvatore Sanfilippo aka antirez and is released
 under the BSD 2 clause license.
+
 CTRL_H에서기능 추가하면 백스페이스 즉 지우는 역할이 안됨
+
+현재 단축키설정이 안되어서 단축키에 기능은 아직 안넣었지만 CTRL_C에서 구현의 성공은 확인함
+
 testtest
 test
