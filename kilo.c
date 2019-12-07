@@ -255,10 +255,9 @@ int getCursorPosition(int ifd, int ofd, int *rows, int *cols) {
     unsigned int i = 0;
 
     if (write(ofd, "\x1b[6n", 4) != 4) return -1;
-    while (i < sizeof(buf)-1) {
-        if (read(ifd,buf+i,1) != 1) break;
-        if (buf[i] == 'R') break;
-        i++;
+    for (i = 0; i < sizeof(buf) - 1; i++) {
+	if((read(ifd, buf + i, 1) != 1) || (buf[i] == 'R'))
+	    break;
     }
     buf[i] = '\0';
 
@@ -438,17 +437,13 @@ int editorSyntaxToColor(int hl) {
 void editorSelectSyntaxHighlight(char *filename) {
     for (unsigned int j = 0; j < HLDB_ENTRIES; j++) {
         struct editorSyntax *s = HLDB+j;
-        unsigned int i = 0;
-        while(s->filematch[i]) {
-            char *p;
-            int patlen = strlen(s->filematch[i]);
-            if ((p = strstr(filename,s->filematch[i])) != NULL) {
-                if (s->filematch[i][0] != '.' || p[patlen] == '\0') {
-                    E.syntax = s;
-                    return;
-                }
-            }
-            i++;
+	for(unsigned int i = 0; s->filematch[i]; i++) {
+	    char *p;
+	    int patlen = strlen(s->filematch[i]);
+	    if((p = strstr(filename, s->filematch[i])) && (s->filematch[i][0] != '.' || p[patlen] == '\0')) {
+		E.syntax = s;
+		return;
+	    }
         }
     }
 }
@@ -464,7 +459,8 @@ void editorUpdateRow(erow *row) {
     for (j = 0; j < row->size; j++) {
         if (row->chars[j] == TAB) {
             row->render[idx++] = ' ';
-            while((idx+1) % 8 != 0) row->render[idx++] = ' ';
+            while((idx+1) % 8 != 0) 
+		row->render[idx++] = ' ';
         } else {
             row->render[idx++] = row->chars[j];
         }
@@ -719,14 +715,13 @@ void abFree(struct abuf *ab) {
 }
 
 void editorRefreshScreen(void) {
-    int y;
     erow *r;
     char buf[32];
     struct abuf ab = ABUF_INIT;
 
     abAppend(&ab,"\x1b[?25l",6);
     abAppend(&ab,"\x1b[H",3);
-    for (y = 0; y < E.screenrows; y++) {
+    for (int y = 0; y < E.screenrows; y++) {
         int filerow = E.rowoff+y;
 
         if (filerow >= E.numrows) {
