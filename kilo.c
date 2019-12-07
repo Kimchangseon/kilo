@@ -487,20 +487,18 @@ void editorInsertRow(int at, char *s, size_t len) {
     E.dirty++;
 }
 
-void editorFreeRow(erow *row) {
+void editorDelRow(int at) {
+    if (at >= E.numrows) 
+	return;
+    erow *row = E.row+at;
+
     free(row->render);
     free(row->chars);
     free(row->hl);
-}
 
-void editorDelRow(int at) {
-    erow *row;
-
-    if (at >= E.numrows) return;
-    row = E.row+at;
-    editorFreeRow(row);
-    memmove(E.row+at,E.row+at+1,sizeof(E.row[0])*(E.numrows-at-1));
-    for (int j = at; j < E.numrows-1; j++) E.row[j].idx++;
+    memmove(E.row+at, E.row + at + 1, sizeof(E.row[0]) * (E.numrows - at - 1));
+    for (int j = at; j < E.numrows - 1; j++) 
+	E.row[j].idx++;
     E.numrows--;
     E.dirty++;
 }
@@ -1172,6 +1170,9 @@ void editorProcessKeypress(int fd) {
         break;
     case CTRL_C:
         break;
+    case CTRL_D:
+	editorDelRow(E.rowoff + E.cy);
+	break;
     case CTRL_Q: 
         if (E.dirty && quit_times) {
             editorSetStatusMessage("WARNING!!! File has unsaved changes. "
