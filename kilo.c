@@ -142,7 +142,7 @@ char *C_HL_keywords[] = {
 
         "switch","if","while","for","break","continue","return","else",
         "struct","union","typedef","static","enum","class",
-
+	"#define|", "#include|", "else if|",
         "int|","long|","double|","float|","char|","unsigned|","signed|",
         "void|",NULL
 };
@@ -314,12 +314,8 @@ void editorUpdateSyntax(erow *row) {
     char *scs = E.syntax->singleline_comment_start;
     char *mcs = E.syntax->multiline_comment_start;
     char *mce = E.syntax->multiline_comment_end;
-    p = row->render;
-    i = 0;
-    while(*p && isspace(*p)) {
-        p++;
-        i++;
-    }
+    
+    for(p = row->render,i=0;*p && isspace(*p);p++,i++);
     prev_sep = 1;
     in_string = 0;
     in_comment = 0;
