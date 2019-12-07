@@ -136,7 +136,6 @@ enum KEY_ACTION{
         PAGE_DOWN
 };
 
-void editorSetStatusMessage(const char *fmt, ...);
 
 char *C_HL_extensions[] = {".c",".cpp",NULL};
 char *C_HL_keywords[] = {
@@ -160,6 +159,14 @@ struct editorSyntax HLDB[] = {
 #define HLDB_ENTRIES (sizeof(HLDB)/sizeof(HLDB[0]))
 
 static struct termios orig_termios;
+
+void editorSetStatusMessage(const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(E.statusmsg, sizeof(E.statusmsg), fmt, ap);
+    va_end(ap);
+    E.statusmsg_time = time(NULL);
+}
 
 void disableRawMode(int fd) {
     if (E.rawmode) {
@@ -820,14 +827,6 @@ void editorRefreshScreen(void) {
     abAppend(&ab,"\x1b[?25h",6);
     write(STDOUT_FILENO,ab.b,ab.len);
     abFree(&ab);
-}
-
-void editorSetStatusMessage(const char *fmt, ...) {
-    va_list ap;
-    va_start(ap,fmt);
-    vsnprintf(E.statusmsg,sizeof(E.statusmsg),fmt,ap);
-    va_end(ap);
-    E.statusmsg_time = time(NULL);
 }
 
 #define KILO_QUERY_LEN 256
