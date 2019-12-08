@@ -1148,7 +1148,7 @@ void editorMoveCursor(int key) {
     }
 }
 
-#define KILO_QUIT_TIMES 3
+#define KILO_QUIT_TIMES 1
 void editorProcessKeypress(int fd) {
 
     static int quit_times = KILO_QUIT_TIMES;
@@ -1163,13 +1163,28 @@ void editorProcessKeypress(int fd) {
     case CTRL_D:
 	editorDelRow(E.rowoff + E.cy);
 	break;
-    case CTRL_Q: 
-        if (E.dirty && quit_times) {
-            editorSetStatusMessage("WARNING!!! File has unsaved changes. "
-                "Press Ctrl-Q %d more times to quit.", quit_times);
-            quit_times--;
-	    return;
-        }
+    case CTRL_Q:
+	if (E.dirty){
+		editorSetStatusMessage("Changes have not been saved. Save:Y / Cancle:N / Exit without saving : Ctrl-Q");
+		editorRefreshScreen();
+		int c = editorReadKey(fd);
+
+		if ((c == 'y') || (c == 'Y')) {
+			if (editorSave())
+				editorRefreshScreen(); 
+			break;
+		}
+		else if ((c == 'n') || (c == 'N')) {
+			editorSetStatusMessage("HELP: Ctrl-S = save | ctrl-Q = quit | Ctrl-F = find | Ctrl-C = Indent");
+			break;
+		}
+        	else if (E.dirty && quit_times) {
+            		editorSetStatusMessage("WARNING!!! File has unsaved changes. "
+                		"Press Ctrl-Q %d more times to quit.", quit_times);
+            		quit_times--;
+	    		return;
+        	}
+	}
 	system("clear");
 	exit(0);
         break;
