@@ -108,7 +108,7 @@ struct editorConfig {
 };
 
 static struct editorConfig E;
-
+#define CTRL_(k)((k) & (0x1f))
 enum KEY_ACTION{
         KEY_NULL = 0,
         CTRL_C = 3,  
@@ -856,7 +856,7 @@ void editorFind(int fd) {
 				E.coloff = saved_coloff; E.rowoff = saved_rowoff;
 			}
 			FIND_RESTORE_HL;
-			editorSetStatusMessage("HELP: Ctrl - S = save | ctrl - Q = quit | Ctrl - F = find | Ctrl - C = Indent");
+			editorSetStatusMessage("HELP: Ctrl - S = save | ctrl - Q = quit | Ctrl - F = find");
 			return;
 		}
 		else if (c == ARROW_RIGHT || c == ARROW_DOWN) {
@@ -922,155 +922,19 @@ void editorFind(int fd) {
 		}
 	}
 }
-
-
-void editorIndent(void) {
-	int ch, tab_counter=0, i,j, line_changed=0, flag=0,counter=0;
-	ch = getchar();
-	while ( ch != EOF){
-		if ( (ch == '\n') || (ch =='\t')){
-			ch = getchar();
-			continue;
-			flag = 0;
-			}
-			if ( (ch != '}') && (line_changed==1)){
-				putchar('\t');
-				flag = 0;
-				}
-				if ( ch == '{'){
-					putchar('\n');
-					for(j=0; j<tab_counter; j++){
-						putchar('\t');
-					}
-					putchar('{');
-					tab_counter++;
-					putchar('\n');
-					for ( i=0; i <tab_counter;i++){
-					putchar('\t');
-					}
-					ch = getchar();
-					while (( ch == ' ')||(ch == '\n')||(ch=='\t')){
-						ch= getchar();
-					}
-					flag = 1;
-				}
-				else if (ch == '}'){							
-					tab_counter--;
-					putchar('}');
-					putchar('\n');
-					for (i=0; i<(tab_counter-1);i++){
-						putchar('\t');
-					}
-					ch = getchar();
-					while (( ch == ' ')||(ch == '\n')||(ch=='\t')){
-						ch= getchar();
-					}
-					flag = 1;
-				}
-				else if(ch==';'){
-					putchar(';');
-					if ( counter ==0){
-						putchar('\n');
-						for ( i=0; i <(tab_counter-1);i++){	
-							putchar('\t');
-						}
-						ch = getchar();
-						while (( ch == ' ')||(ch == '\n')||(ch=='\t')){
-							ch= getchar();
-						}
-						flag = 1;
-						line_changed=1;
-					}
-					else
-						flag = 0;
-				}
-				else if(ch == '\'' ){	
-					putchar(ch);
-					ch =getchar();
-					if ( ch == '\\'){
-						putchar(ch);
-						ch = getchar();
-						putchar(ch);
-						ch = getchar();
-					}
-					while( ch != '\''){	
-						putchar(ch);
-						ch = getchar();
-					}	
-					putchar(ch);
-					flag = 0;
-				}
-				else if(ch == '\"' ){	
-					putchar(ch);
-					ch =getchar();
-					if ( ch == '\\'){
-						putchar(ch);
-						ch = getchar();
-						putchar(ch);
-						ch = getchar();
-					}
-					while( ch != '\"'){	
-						putchar(ch);
-						ch = getchar();
-						if ( ch == '\\'){
-							putchar(ch);
-							ch = getchar();
-							putchar(ch);
-							ch = getchar();
-						}
-					}
-					putchar(ch);
-					flag = 0;
-				}
-				else if ( ch == '#'){		
-					putchar(ch);
-					while ( ch != '\n'){
-						ch = getchar();
-						putchar(ch);
-					}
-					flag = 0;
-				}
-				else if ( ch == ' '){
-					putchar(ch);
-					ch = getchar();
-						while (( ch == ' ')||(ch == '\n')||(ch=='\t')){
-							ch = getchar();
-						}
-					flag = 1;
-				}
-				else if ( ch == '('){	
-					putchar(ch);
-					counter++;
-					flag=0;
-				}							
-				else if ( ch == ')'){
-					putchar(ch);
-					counter--;
-					flag = 0;
-				}
-				else {
-					putchar(ch);
-					line_changed=0;
-					flag = 0;
-				}
-			if ( flag ==0 )
-				ch = getchar();	
-	}
-}
- void startOfLine() {
+void startOfLine() {
     int filerow = E.rowoff + E.cy;
      erow *row = (filerow >= E.numrows) ? NULL : &E.row[filerow];
      if (row)
          E.cx = 0;
  }
 
- void endOfLine() {
+void endOfLine() {
 	int filerow = E.rowoff + E.cy;
 	erow *row = (filerow >= E.numrows) ? NULL : &E.row[filerow];
 	if(row)
 	 E.cx = row ->size;
 }
-
 
 void editorMoveCursor(int key) {
     int filerow = E.rowoff+E.cy;
@@ -1175,7 +1039,7 @@ void editorProcessKeypress(int fd) {
 			break;
 		}
 		else if ((c == 'n') || (c == 'N')) {
-			editorSetStatusMessage("HELP: Ctrl-S = save | ctrl-Q = quit | Ctrl-F = find | Ctrl-C = Indent");
+			editorSetStatusMessage("HELP: Ctrl-S = save | ctrl-Q = quit | Ctrl-F = find");
 			break;
 		}
         	else if (E.dirty && quit_times) {
@@ -1231,7 +1095,7 @@ void editorProcessKeypress(int fd) {
     case CTRL_L:
         break;
     case ESC:
-	editorSetStatusMessage("HELP: Ctrl-S = save | ctrl-Q = quit | Ctrl-F = find | Ctrl-C = Indent");
+	editorSetStatusMessage("HELP: Ctrl-S = save | ctrl-Q = quit | Ctrl-F = find");
         break;
     default:
         editorInsertChar(c);
@@ -1275,7 +1139,7 @@ int main(int argc, char **argv) {
     editorOpen(argv[1]);
     enableRawMode(STDIN_FILENO);
     editorSetStatusMessage(
-        "HELP: Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find | Ctrl-C = Indent");
+        "HELP: Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find");
     while(1) {
         editorRefreshScreen();
         editorProcessKeypress(STDIN_FILENO);
