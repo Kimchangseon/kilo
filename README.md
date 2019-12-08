@@ -14,7 +14,7 @@ Keys:
 Add Keys :
 
     CTRL-J : Move Cursor Start point
-    CTRL-K : Movew Cursor End point
+    CTRL-K : Move Cursor End point
     CTRL-D : Delete a row
 
 Kilo does not depend on any library (not even curses). It uses fairly standard
