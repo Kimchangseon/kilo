@@ -15,7 +15,7 @@ Add Keys :
 
     CTRL-J : Move Cursor Start point
     CTRL-K : Movew Cursor End point
-    CTRL-E : Delete a row
+    CTRL-D : Delete a row
 
 Kilo does not depend on any library (not even curses). It uses fairly standard
 VT100 (and similar terminals) escape sequences. The project is in alpha
